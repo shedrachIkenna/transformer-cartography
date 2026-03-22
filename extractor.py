@@ -11,4 +11,8 @@ class ResidualStreamExtractor:
         L = number of layers 
         S = Sequence length 
         D = hidden dim 
+
+    wte: word token embedding 
+    wpe: word position embedding 
+    L + 1: L+1 layer states total for L blocks 
     """
