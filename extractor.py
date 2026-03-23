@@ -26,3 +26,8 @@ class ResidualStreamExtractor:
         self._hooks: list[torch.utils.hooks.RemovableHook] = [] # saves a reference of pytorch internal record of the _hook_fn function which we will use for cleanup 
 
         self._register_hooks()
+
+    def _register_hooks(self) -> None: 
+        # Get that initial layer (wte + wpe)
+        # This captures the true state of the token vector before it enters the first layer 
+        h0 = self.model.transformer.drop.register_forward_hook(self._hook_fn)
