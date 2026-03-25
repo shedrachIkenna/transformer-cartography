@@ -50,3 +50,18 @@ class ResidualStreamExtractor:
             handle.remove() # detaches each hook from the layer 
         
         self._hooks.clear() # clears the hook's list 
+
+    def _hook_fn(self, module, input, output) -> None: 
+        """
+        Pytorch will automatically run this function everytime each hooked layer completes its forward pass 
+
+        Our aim is to get the layer's output tensor 
+        """
+        # Get the output state (its a plain tensor. shape is [S, D]) from each layer. 
+        # If a layer's output is a tuple, get the item in the first index (output[0] - the layer's plain tensor) else get the output (the plain tensor)
+        state = output[0] if isinstance(output, tuple) else output
+
+        # add each layer's output state tensors to the residual stack list 
+        # .detach removes the computational graph attached to each tensor to free up memory 
+        # move the tensors to cpu
+        self._residual_stack.append(state.detach().cpu())
