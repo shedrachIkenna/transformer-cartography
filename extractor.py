@@ -22,12 +22,23 @@ class ResidualStreamExtractor:
         self.model = AutoModelCausalLM.from_pretrained(model_name) # GPT-2 model weights 
         self.model.eval() # tells pytorch that the model is used for inference not training 
 
-        self._residual_stack: list[torch.Tensor] = [] # Where we store the residual we get from a layer 
+        self._residual_stack: list[torch.Tensor] = [] # Where we store the residual we get after each layer 
         self._hooks: list[torch.utils.hooks.RemovableHook] = [] # saves a reference of pytorch internal record of the _hook_fn function which we will use for cleanup 
 
-        self._register_hooks()
+        self._register_hooks() # function that fires during the forward pass of each layer 
 
     def _register_hooks(self) -> None: 
-        # Get that initial layer (wte + wpe)
-        # This captures the true state of the token vector before it enters the first layer 
-        h0 = self.model.transformer.drop.register_forward_hook(self._hook_fn)
+        """ 
+        This is a setup function that wires up the hook function (_hook_fn) to each layer
+
+        _hook_fn is a callback function that automatically runs every time a layer completes its forward pass 
+        """
+        # Wires the hook function to the initial layer (wte + wpe)
+        # Connects the hook function to get the initial state of the token vector before it enters the first layer 
+        h0 = self.model.transformer.drop.register_forward_hook(self._hook_fn) 
+
+        block_hooks = [
+            layer.register_forward_hook(self._hook_fn) for layer in self.model.transformer.h 
+        ]
+
+        self._hooks = [h0, *block_hooks]
