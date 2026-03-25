@@ -42,3 +42,11 @@ class ResidualStreamExtractor:
         ]
 
         self._hooks = [h0, *block_hooks]
+
+
+    def remove_hooks(self) -> None: 
+        """Remove all registered hooks. It is called when the extractor is no longer needed"""
+        for handle in self._hooks: # loops through each layer hook 
+            handle.remove() # detaches each hook from the layer 
+        
+        self._hooks.clear() # clears the hook's list 
