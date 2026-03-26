@@ -76,3 +76,12 @@ class ResidualStreamExtractor:
             tokens: list[str]
                     The tokenized prompt as human readable token strings 
         """
+
+        # clear stack before a new run to get residuals from all layers 
+        self._residual_stack.clear()
+
+        inputs = self.tokenizer(prompt, returns_tensors="pt")
+        tokens = self.tokenizer.convert_ids_to_tokens(inputs["inputs_ids"][0])
+
+        with torch.no_grad():
+            self.model(**inputs)
