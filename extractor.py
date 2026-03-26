@@ -65,3 +65,14 @@ class ResidualStreamExtractor:
         # .detach removes the computational graph attached to each tensor to free up memory 
         # move the tensors to cpu
         self._residual_stack.append(state.detach().cpu())
+
+    def extract(self, prompt: str) -> tuple[torch.Tensor, list[str]]:
+        """
+        Run the forward pass and return the residual stream tensor and token list 
+
+        Returns: 
+            data: torch.Tensor 
+                  shape [L+1, S, D] - [layers + 1, Token_List, Hidden_Dim]
+            tokens: list[str]
+                    The tokenized prompt as human readable token strings 
+        """
