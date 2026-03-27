@@ -80,8 +80,14 @@ class ResidualStreamExtractor:
         # clear stack before a new run to get residuals from all layers 
         self._residual_stack.clear()
 
+        # tokenize the prompt and return pytorch tensors ("pt")
+        # Each token in the prompt gets mapped to an integer ID from GPT-2 vocabulary 
         inputs = self.tokenizer(prompt, returns_tensors="pt")
+
+        # The token_ids gets converted back into tokens. 
+        # The idea is that the tokenizer from the previous line uses BPE
+        # So the token we get in the next line might end up different from the ones from the prompt (because of subwords)
         tokens = self.tokenizer.convert_ids_to_tokens(inputs["inputs_ids"][0])
 
-        with torch.no_grad():
-            self.model(**inputs)
+        with torch.no_grad(): # stop the model from saving the computational graph during the forward pass. we are not training here 
+            self.model(**inputs) # pass the tokenized prompt to the model 
